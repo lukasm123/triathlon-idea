@@ -151,7 +151,7 @@ function App() {
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2">
                 <CalendarIcon className="w-8 h-8 text-blue-600" />
-                <h1 className="text-2xl font-bold text-gray-900">Triathlon Scheduler</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Triathlon Race Scheduler</h1>
               </div>
               <div className="hidden sm:flex items-center space-x-1 text-sm text-gray-500">
                 <span>🏊‍♂️</span>
@@ -162,7 +162,7 @@ function App() {
             
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">
-                {events.length} event{events.length !== 1 ? 's' : ''} scheduled
+                {races.length} race{races.length !== 1 ? 's' : ''} scheduled
               </div>
             </div>
           </div>
@@ -188,10 +188,10 @@ function App() {
         )}
 
         <Calendar
-          events={events}
-          onEventCreate={handleEventCreate}
-          onEventUpdate={handleEventUpdate}
-          onEventDelete={handleEventDelete}
+          races={races}
+          onRaceCreate={handleRaceCreate}
+          onRaceUpdate={handleRaceUpdate}
+          onRaceDelete={handleRaceDelete}
         />
       </main>
 
