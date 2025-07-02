@@ -3,21 +3,24 @@ import { Calendar as CalendarIcon, Activity } from 'lucide-react';
 import Calendar from './components/Calendar';
 import { TriathlonEvent, NewEvent } from './types';
 
-c// API Configuration for different environments
-const API_BASE_URL = (() => {
-  // In Gitpod, use the public backend URL
-  if (window.location.hostname.includes('gitpod.dev')) {
+// API Configuration for different environments
+const getApiBaseUrl = () => {
+  // Check if we're in Gitpod environment
+  if (typeof window !== 'undefined' && window.location.hostname.includes('gitpod.dev')) {
     const envId = window.location.hostname.split('--')[1];
     return `https://3001--${envId}/api`;
   }
+  
   // In production, use relative path
   if (process.env.NODE_ENV === 'production') {
     return '/api';
   }
+  
   // In local development, use localhost
   return 'http://localhost:3001/api';
-})();
+};
 
+const API_BASE_URL = getApiBaseUrl();
 console.log('🔗 API Base URL:', API_BASE_URL);
 
 function App() {
