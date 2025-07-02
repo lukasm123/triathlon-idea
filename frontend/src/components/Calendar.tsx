@@ -1,77 +1,86 @@
 /**
- * Calendar Component
+ * Triathlon Race Calendar Component
  * 
- * A comprehensive calendar interface for managing triathlon events.
- * Features a monthly view with Monday-Sunday week layout, event creation,
- * editing, and deletion capabilities.
+ * A specialized calendar interface for triathlon race scheduling with automatic
+ * recovery period visualization. Helps athletes plan their race calendar by
+ * showing recovery periods and detecting scheduling conflicts.
  * 
  * Key Features:
- * - Monthly calendar view with proper week layout (Monday start)
- * - Event display with color coding by type
- * - Click-to-create events on any day
- * - Click-to-edit existing events
- * - Responsive design for all screen sizes
- * - Today highlighting and month navigation
+ * - Monthly calendar view with Monday-Sunday week layout
+ * - Race display with color coding by distance (Sprint, Olympic, Middle, Long)
+ * - Automatic recovery period calculation and visualization
+ * - Conflict detection when races overlap with recovery periods
+ * - Click-to-create races on any day
+ * - Click-to-edit existing races
+ * - Recovery period intensity indicators
+ * 
+ * Recovery Periods:
+ * - Sprint: ~3 days
+ * - Olympic: ~5-7 days  
+ * - Middle: ~10-14 days
+ * - Long: ~25-35 days
  * 
  * @component
  * @example
  * <Calendar
- *   events={events}
- *   onEventCreate={handleCreate}
- *   onEventUpdate={handleUpdate}
- *   onEventDelete={handleDelete}
+ *   races={races}
+ *   onRaceCreate={handleCreate}
+ *   onRaceUpdate={handleUpdate}
+ *   onRaceDelete={handleDelete}
  * />
  */
 
 import React, { useState, useEffect } from 'react';
 import { format, addMonths, subMonths, startOfMonth, isSameDay, isToday } from 'date-fns';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import { TriathlonEvent, CalendarDay } from '../types';
-import { getCalendarDays, getEventTypeColor, getEventTypeIcon } from '../utils/dateUtils';
+import { ChevronLeft, ChevronRight, Plus, AlertTriangle, Info } from 'lucide-react';
+import { TriathlonRace, CalendarDay, SchedulingConflict } from '../types';
+import { 
+  getCalendarDays, 
+  getRaceDistanceColor, 
+  getRaceDistanceIcon,
+  getRecoveryColor,
+  formatRecoveryPeriod,
+  detectSchedulingConflicts
+} from '../utils/dateUtils';
 import EventModal from './EventModal';
 
 /**
  * Props for the Calendar component
  */
 interface CalendarProps {
-  /** Array of triathlon events to display */
-  events: TriathlonEvent[];
-  /** Callback function when a new event is created */
-  onEventCreate: (event: any) => void;
-  /** Callback function when an event is updated */
-  onEventUpdate: (id: string, event: any) => void;
-  /** Callback function when an event is deleted */
-  onEventDelete: (id: string) => void;
+  /** Array of triathlon races to display */
+  races: TriathlonRace[];
+  /** Callback function when a new race is created */
+  onRaceCreate: (race: any) => void;
+  /** Callback function when a race is updated */
+  onRaceUpdate: (id: string, race: any) => void;
+  /** Callback function when a race is deleted */
+  onRaceDelete: (id: string) => void;
 }
 
 /**
  * Main Calendar Component Implementation
  */
-const Calendar: React.FC<CalendarProps> = ({ events, onEventCreate, onEventUpdate, onEventDelete }) => {
+const Calendar: React.FC<CalendarProps> = ({ races, onRaceCreate, onRaceUpdate, onRaceDelete }) => {
   // State Management
   const [currentDate, setCurrentDate] = useState(new Date()); // Currently displayed month
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]); // Calendar grid data
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null); // Date selected for event creation
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null); // Date selected for race creation
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
-  const [selectedEvent, setSelectedEvent] = useState<TriathlonEvent | null>(null); // Event selected for editing
+  const [selectedRace, setSelectedRace] = useState<TriathlonRace | null>(null); // Race selected for editing
+  const [schedulingConflict, setSchedulingConflict] = useState<SchedulingConflict | null>(null); // Current conflict
 
   /**
-   * Effect: Update calendar days when current month or events change
-   * Generates the calendar grid and associates events with their respective days
+   * Effect: Update calendar days when current month or races change
+   * Generates the calendar grid with races and recovery periods
    */
   useEffect(() => {
-    // Generate calendar grid for the current month
-    const days = getCalendarDays(startOfMonth(currentDate));
+    // Generate calendar grid with race and recovery data
+    const days = getCalendarDays(startOfMonth(currentDate), races);
     
-    // Associate events with their corresponding calendar days
-    const daysWithEvents = days.map(day => ({
-      ...day,
-      events: events.filter(event => isSameDay(new Date(event.date), day.date))
-    }));
-    
-    setCalendarDays(daysWithEvents);
-    console.log(`📅 Calendar updated for ${format(currentDate, 'MMMM yyyy')} with ${events.length} events`);
-  }, [currentDate, events]);
+    setCalendarDays(days);
+    console.log(`🏁 Calendar updated for ${format(currentDate, 'MMMM yyyy')} with ${races.length} races`);
+  }, [currentDate, races]);
 
     // Event Handlers
 

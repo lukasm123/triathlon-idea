@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Activity } from 'lucide-react';
+import { Calendar as CalendarIcon, Activity, Target } from 'lucide-react';
 import Calendar from './components/Calendar';
-import { TriathlonEvent, NewEvent } from './types';
+import { TriathlonRace, NewRace } from './types';
 
 // API Configuration for different environments
 const getApiBaseUrl = () => {
@@ -24,16 +24,16 @@ const API_BASE_URL = getApiBaseUrl();
 console.log('🔗 API Base URL:', API_BASE_URL);
 
 function App() {
-  const [events, setEvents] = useState<TriathlonEvent[]>([]);
+  const [races, setRaces] = useState<TriathlonRace[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-    // Fetch events from API with detailed error handling
-  const fetchEvents = async () => {
+  // Fetch races from API with detailed error handling
+  const fetchRaces = async () => {
     try {
-      console.log('🔄 Fetching events from:', `${API_BASE_URL}/events`);
+      console.log('🔄 Fetching races from:', `${API_BASE_URL}/races`);
       
-      const response = await fetch(`${API_BASE_URL}/events`, {
+      const response = await fetch(`${API_BASE_URL}/races`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -45,90 +45,90 @@ function App() {
       }
       
       const data = await response.json();
-      console.log('✅ Events fetched successfully:', data.length, 'events');
-      setEvents(data);
+      console.log('✅ Races fetched successfully:', data.length, 'races');
+      setRaces(data);
       setError(null); // Clear any previous errors
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch events';
-      console.error('❌ Error fetching events:', errorMessage);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch races';
+      console.error('❌ Error fetching races:', errorMessage);
       setError(`Unable to connect to the backend API. ${errorMessage}`);
     } finally {
       setLoading(false);
     }
   };
 
-    // Create new event with improved error handling
-  const handleEventCreate = async (eventData: NewEvent) => {
+  // Create new race with improved error handling
+  const handleRaceCreate = async (raceData: NewRace) => {
     try {
-      console.log('🔄 Creating event:', eventData);
+      console.log('🔄 Creating race:', raceData);
       
-      const response = await fetch(`${API_BASE_URL}/events`, {
+      const response = await fetch(`${API_BASE_URL}/races`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(eventData),
+        body: JSON.stringify(raceData),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Failed to create event: ${response.status} ${errorText}`);
+        throw new Error(`Failed to create race: ${response.status} ${errorText}`);
       }
 
-      const newEvent = await response.json();
-      console.log('✅ Event created successfully:', newEvent);
-      setEvents(prev => [...prev, newEvent]);
+      const newRace = await response.json();
+      console.log('✅ Race created successfully:', newRace);
+      setRaces(prev => [...prev, newRace]);
       setError(null); // Clear any previous errors
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create event';
-      console.error('❌ Error creating event:', errorMessage);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create race';
+      console.error('❌ Error creating race:', errorMessage);
       setError(errorMessage);
     }
   };
 
-  // Update existing event
-  const handleEventUpdate = async (id: string, eventData: Partial<NewEvent>) => {
+  // Update existing race
+  const handleRaceUpdate = async (id: string, raceData: Partial<NewRace>) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/events/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/races/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(eventData),
+        body: JSON.stringify(raceData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update event');
+        throw new Error('Failed to update race');
       }
 
-      const updatedEvent = await response.json();
-      setEvents(prev => prev.map(event => 
-        event.id === id ? updatedEvent : event
+      const updatedRace = await response.json();
+      setRaces(prev => prev.map(race => 
+        race.id === id ? updatedRace : race
       ));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update event');
+      setError(err instanceof Error ? err.message : 'Failed to update race');
     }
   };
 
-  // Delete event
-  const handleEventDelete = async (id: string) => {
+  // Delete race
+  const handleRaceDelete = async (id: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/events/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/races/${id}`, {
         method: 'DELETE',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete event');
+        throw new Error('Failed to delete race');
       }
 
-      setEvents(prev => prev.filter(event => event.id !== id));
+      setRaces(prev => prev.filter(race => race.id !== id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete event');
+      setError(err instanceof Error ? err.message : 'Failed to delete race');
     }
   };
 
   useEffect(() => {
-    fetchEvents();
+    fetchRaces();
   }, []);
 
   if (loading) {
