@@ -1,0 +1,7 @@
+# Gitpod Automations Configuration
+# This file defines tasks and services for the development environment
+# Add your development workflows here as the project grows
+
+tasks: {}
+
+services: {}
