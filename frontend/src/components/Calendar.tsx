@@ -1,3 +1,28 @@
+/**
+ * Calendar Component
+ * 
+ * A comprehensive calendar interface for managing triathlon events.
+ * Features a monthly view with Monday-Sunday week layout, event creation,
+ * editing, and deletion capabilities.
+ * 
+ * Key Features:
+ * - Monthly calendar view with proper week layout (Monday start)
+ * - Event display with color coding by type
+ * - Click-to-create events on any day
+ * - Click-to-edit existing events
+ * - Responsive design for all screen sizes
+ * - Today highlighting and month navigation
+ * 
+ * @component
+ * @example
+ * <Calendar
+ *   events={events}
+ *   onEventCreate={handleCreate}
+ *   onEventUpdate={handleUpdate}
+ *   onEventDelete={handleDelete}
+ * />
+ */
+
 import React, { useState, useEffect } from 'react';
 import { format, addMonths, subMonths, startOfMonth, isSameDay, isToday } from 'date-fns';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
@@ -5,57 +30,101 @@ import { TriathlonEvent, CalendarDay } from '../types';
 import { getCalendarDays, getEventTypeColor, getEventTypeIcon } from '../utils/dateUtils';
 import EventModal from './EventModal';
 
+/**
+ * Props for the Calendar component
+ */
 interface CalendarProps {
+  /** Array of triathlon events to display */
   events: TriathlonEvent[];
+  /** Callback function when a new event is created */
   onEventCreate: (event: any) => void;
+  /** Callback function when an event is updated */
   onEventUpdate: (id: string, event: any) => void;
+  /** Callback function when an event is deleted */
   onEventDelete: (id: string) => void;
 }
 
+/**
+ * Main Calendar Component Implementation
+ */
 const Calendar: React.FC<CalendarProps> = ({ events, onEventCreate, onEventUpdate, onEventDelete }) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<TriathlonEvent | null>(null);
+  // State Management
+  const [currentDate, setCurrentDate] = useState(new Date()); // Currently displayed month
+  const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]); // Calendar grid data
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null); // Date selected for event creation
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
+  const [selectedEvent, setSelectedEvent] = useState<TriathlonEvent | null>(null); // Event selected for editing
 
+  /**
+   * Effect: Update calendar days when current month or events change
+   * Generates the calendar grid and associates events with their respective days
+   */
   useEffect(() => {
+    // Generate calendar grid for the current month
     const days = getCalendarDays(startOfMonth(currentDate));
     
-    // Add events to calendar days
+    // Associate events with their corresponding calendar days
     const daysWithEvents = days.map(day => ({
       ...day,
       events: events.filter(event => isSameDay(new Date(event.date), day.date))
     }));
     
     setCalendarDays(daysWithEvents);
+    console.log(`📅 Calendar updated for ${format(currentDate, 'MMMM yyyy')} with ${events.length} events`);
   }, [currentDate, events]);
 
+    // Event Handlers
+
+  /**
+   * Navigate to the previous month
+   */
   const handlePrevMonth = () => {
-    setCurrentDate(subMonths(currentDate, 1));
+    const newDate = subMonths(currentDate, 1);
+    setCurrentDate(newDate);
+    console.log('📅 Navigated to:', format(newDate, 'MMMM yyyy'));
   };
 
+  /**
+   * Navigate to the next month
+   */
   const handleNextMonth = () => {
-    setCurrentDate(addMonths(currentDate, 1));
+    const newDate = addMonths(currentDate, 1);
+    setCurrentDate(newDate);
+    console.log('📅 Navigated to:', format(newDate, 'MMMM yyyy'));
   };
 
+  /**
+   * Handle clicking on a calendar day to create a new event
+   * @param day - The calendar day that was clicked
+   */
   const handleDayClick = (day: CalendarDay) => {
     setSelectedDate(day.date);
-    setSelectedEvent(null);
+    setSelectedEvent(null); // Clear any selected event (we're creating new)
     setIsModalOpen(true);
+    console.log('📅 Day clicked for new event:', format(day.date, 'yyyy-MM-dd'));
   };
 
+  /**
+   * Handle clicking on an existing event to edit it
+   * @param event - The event that was clicked
+   * @param e - Mouse event (used to prevent day click propagation)
+   */
   const handleEventClick = (event: TriathlonEvent, e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent triggering day click
     setSelectedEvent(event);
     setSelectedDate(new Date(event.date));
     setIsModalOpen(true);
+    console.log('✏️ Event clicked for editing:', event.title);
   };
 
+  /**
+   * Handle clicking the "Add Event" button to create a new event for today
+   */
   const handleAddEvent = () => {
-    setSelectedDate(new Date());
+    setSelectedDate(new Date()); // Default to today
     setSelectedEvent(null);
     setIsModalOpen(true);
+    console.log('➕ Add Event button clicked');
   };
 
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

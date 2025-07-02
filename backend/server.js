@@ -1,3 +1,20 @@
+/**
+ * Triathlon Scheduler Backend API
+ * 
+ * A RESTful API server for managing triathlon events including training sessions,
+ * races, recovery activities, and other events. Built with Express.js and SQLite.
+ * 
+ * Features:
+ * - Full CRUD operations for triathlon events
+ * - Event categorization (training, race, recovery, other)
+ * - SQLite database for lightweight data persistence
+ * - CORS enabled for frontend integration
+ * - UUID-based event identification
+ * 
+ * @author Triathlon Scheduler Team
+ * @version 1.0.0
+ */
+
 const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
@@ -7,38 +24,81 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Middleware Configuration
+app.use(cors({
+  origin: true, // Allow all origins for development
+  credentials: true
+}));
+app.use(express.json({ limit: '10mb' })); // Parse JSON bodies with size limit
 
-// Database setup
+// Database Configuration
 const dbPath = path.join(__dirname, 'triathlon_events.db');
-const db = new sqlite3.Database(dbPath);
-
-// Initialize database
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS events (
-    id TEXT PRIMARY KEY,
-    title TEXT NOT NULL,
-    date TEXT NOT NULL,
-    time TEXT,
-    type TEXT NOT NULL,
-    description TEXT,
-    location TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('❌ Error opening database:', err.message);
+  } else {
+    console.log('📊 Connected to SQLite database:', dbPath);
+  }
 });
 
-// Routes
+// Database Schema Initialization
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS events (
+    id TEXT PRIMARY KEY,              -- Unique identifier (UUID)
+    title TEXT NOT NULL,              -- Event title/name
+    date TEXT NOT NULL,               -- Event date (YYYY-MM-DD format)
+    time TEXT,                        -- Event time (HH:MM format, optional)
+    type TEXT NOT NULL,               -- Event type: training|race|recovery|other
+    description TEXT,                 -- Optional event description
+    location TEXT,                    -- Optional event location
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,  -- Record creation timestamp
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP   -- Record update timestamp
+  )`, (err) => {
+    if (err) {
+      console.error('❌ Error creating events table:', err.message);
+    } else {
+      console.log('✅ Events table ready');
+    }
+  });
+});
 
-// Get all events
+// API Routes
+
+/**
+ * GET /api/events
+ * Retrieve all triathlon events ordered by date and time
+ * 
+ * @returns {Array} Array of event objects
+ * @example
+ * GET /api/events
+ * Response: [
+ *   {
+ *     "id": "uuid-here",
+ *     "title": "Morning Swim",
+ *     "date": "2025-07-03",
+ *     "time": "07:00",
+ *     "type": "training",
+ *     "description": "1500m freestyle",
+ *     "location": "Local Pool",
+ *     "created_at": "2025-07-02T17:00:00.000Z",
+ *     "updated_at": "2025-07-02T17:00:00.000Z"
+ *   }
+ * ]
+ */
 app.get('/api/events', (req, res) => {
+  console.log('📋 Fetching all events');
+  
   db.all('SELECT * FROM events ORDER BY date, time', (err, rows) => {
     if (err) {
-      res.status(500).json({ error: err.message });
+      console.error('❌ Error fetching events:', err.message);
+      res.status(500).json({ 
+        error: 'Database error', 
+        message: err.message 
+      });
       return;
     }
+    
+    console.log(`✅ Retrieved ${rows.length} events`);
     res.json(rows);
   });
 });
