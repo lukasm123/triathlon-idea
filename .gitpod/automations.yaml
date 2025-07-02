@@ -1,7 +1,68 @@
 # Gitpod Automations Configuration
-# This file defines tasks and services for the development environment
-# Add your development workflows here as the project grows
+# Triathlon Scheduler Development Environment
 
-tasks: {}
+tasks:
+  install-dependencies:
+    name: Install Dependencies
+    description: Install all project dependencies for frontend and backend
+    command: |
+      echo "🏊‍♂️ Installing backend dependencies..."
+      cd backend && npm install
+      echo "🚴‍♂️ Installing frontend dependencies..."
+      cd ../frontend && npm install
+      echo "🏃‍♂️ Dependencies installed successfully!"
+    triggeredBy:
+      - postDevcontainerStart
 
-services: {}
+  setup-database:
+    name: Setup Database
+    description: Initialize the SQLite database for triathlon events
+    command: |
+      echo "📊 Setting up database..."
+      cd backend
+      node -e "
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('triathlon_events.db');
+        db.serialize(() => {
+          db.run(\`CREATE TABLE IF NOT EXISTS events (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            date TEXT NOT NULL,
+            time TEXT,
+            type TEXT NOT NULL,
+            description TEXT,
+            location TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )\`);
+          console.log('✅ Database initialized successfully');
+        });
+        db.close();
+      "
+    dependsOn:
+      - install-dependencies
+
+services:
+  backend:
+    name: Backend API Server
+    commands:
+      start: |
+        cd backend
+        echo "🚀 Starting Triathlon Scheduler API on port 3001..."
+        npm run dev
+      ready: |
+        curl -f http://localhost:3001/api/health
+      stop: |
+        echo "🛑 Stopping backend server..."
+
+  frontend:
+    name: Frontend Development Server
+    commands:
+      start: |
+        cd frontend
+        echo "🎨 Starting React development server on port 3000..."
+        npm start
+      ready: |
+        curl -f http://localhost:3000
+      stop: |
+        echo "🛑 Stopping frontend server..."

@@ -3,21 +3,24 @@
 //
 // See https://aka.ms/devcontainer.json for more information.
 {
-	"name": "Triathlon Idea Dev Environment",
-	"build": {
-        "context": ".",
-        "dockerfile": "Dockerfile"
-    },
+	"name": "Triathlon Scheduler Dev Environment",
+	"image": "mcr.microsoft.com/devcontainers/javascript-node:18",
 	
-	// Configure port forwarding for future development needs
-	"forwardPorts": [],
-	"portsAttributes": {},
+	// Configure port forwarding for development servers
+	"forwardPorts": [3000, 3001],
+	"portsAttributes": {
+		"3000": {
+			"label": "Frontend (React)",
+			"onAutoForward": "notify"
+		},
+		"3001": {
+			"label": "Backend (Express API)",
+			"onAutoForward": "notify"
+		}
+	},
 	
-	// Features add additional features to your environment. See https://containers.dev/features
-	// Beware: features are not supported on all platforms and may have unintended side-effects.
-	// "features": {
-    //   "ghcr.io/devcontainers/features/docker-in-docker": {
-    //     "moby": false
-    //   }
-    // }
+	// Features add additional features to your environment
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {}
+	}
 }
