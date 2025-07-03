@@ -17,9 +17,11 @@ A specialized web application for intelligent triathlon race scheduling with aut
 - **🔥 Long Distance (Ironman)**: ~25-35 days recovery (3.8km swim, 180km bike, 42.2km run)
 
 ### 🎨 **Modern Interface**
+- **Dual View System**: Toggle between Calendar and List views
+- **Visual Recovery Periods**: Color-coded underlines showing recovery zones
 - **Clean Calendar View**: Monthly layout with Monday-Sunday week structure
+- **Comprehensive List View**: Sortable, searchable race management
 - **Color-Coded Races**: Visual distinction between race distances
-- **Recovery Visualization**: Clear indicators for recovery periods
 - **Conflict Warnings**: Smart alerts for scheduling conflicts
 - **Responsive Design**: Works perfectly on all devices
 
@@ -74,10 +76,22 @@ A specialized web application for intelligent triathlon race scheduling with aut
 4. **Conflict Detection**: Get warnings for races scheduled during recovery
 
 ### 📊 **Recovery Management**
-- **Visual Indicators**: Recovery periods shown as colored overlays
-- **Intensity Levels**: Light, moderate, and heavy recovery visualization
+- **Visual Recovery Periods**: Color-coded underlines on calendar days
+  - 🟡 **Yellow**: Light recovery (Sprint ~3 days)
+  - 🟠 **Orange**: Moderate recovery (Olympic ~5-7 days)
+  - 🔴 **Red**: Heavy recovery (Middle/Long 10-35 days)
+- **Conflict Indicators**: Red background for scheduling conflicts
+- **Recovery Tooltips**: Hover for detailed recovery information
 - **Smart Warnings**: Conflict alerts with severity levels
-- **Planning Assistance**: Optimal race spacing recommendations
+
+### 🔄 **Dual View System**
+- **Calendar View**: Visual monthly layout with recovery periods
+- **List View**: Comprehensive race management with:
+  - Sortable columns (date, title, distance, location)
+  - Search across all race fields
+  - Filter by race distance
+  - Status indicators (upcoming, today, recovery, past)
+  - Quick edit/delete actions
 
 ## 🛠️ Development
 
