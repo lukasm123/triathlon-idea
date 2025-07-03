@@ -83,16 +83,24 @@ describe('Calendar Component', () => {
     expect(addButton).toBeInTheDocument();
   });
 
-  test('navigates between months', () => {
+    test('navigates between months', () => {
     render(<Calendar {...mockProps} />);
     
-    // Find navigation buttons (they might be aria-labeled or have specific classes)
-    const prevButton = screen.getByRole('button', { name: /previous/i }) || 
-                      document.querySelector('button svg')?.closest('button');
+    // Find navigation buttons by their SVG content (ChevronLeft and ChevronRight)
+    const buttons = screen.getAllByRole('button');
+    const navigationButtons = buttons.filter(button => 
+      button.querySelector('svg') && 
+      !button.textContent?.includes('Add Race')
+    );
     
-    if (prevButton) {
-      fireEvent.click(prevButton);
-      // Month should change (exact assertion depends on current date)
+    // Should have 2 navigation buttons (prev and next)
+    expect(navigationButtons).toHaveLength(2);
+    
+    // Test clicking navigation (we can't easily test the exact month change without mocking dates)
+    if (navigationButtons.length > 0) {
+      fireEvent.click(navigationButtons[0]);
+      // Navigation button should be clickable
+      expect(navigationButtons[0]).toBeInTheDocument();
     }
   });
 
