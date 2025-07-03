@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Activity, Target } from 'lucide-react';
+import { Calendar as CalendarIcon, Activity, List, Grid } from 'lucide-react';
 import Calendar from './components/Calendar';
+import ListView from './components/ListView';
 import { TriathlonRace, NewRace } from './types';
 
 // API Configuration for different environments
@@ -23,10 +24,13 @@ const getApiBaseUrl = () => {
 const API_BASE_URL = getApiBaseUrl();
 console.log('🔗 API Base URL:', API_BASE_URL);
 
+type ViewMode = 'calendar' | 'list';
+
 function App() {
   const [races, setRaces] = useState<TriathlonRace[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
 
   // Fetch races from API with detailed error handling
   const fetchRaces = async () => {
@@ -164,6 +168,32 @@ function App() {
               <div className="text-sm text-gray-600">
                 {races.length} race{races.length !== 1 ? 's' : ''} scheduled
               </div>
+              
+              {/* View Toggle */}
+              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('calendar')}
+                  className={`flex items-center space-x-1 px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'calendar' 
+                      ? 'bg-white text-gray-900 shadow-sm' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Grid className="w-4 h-4" />
+                  <span>Calendar</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`flex items-center space-x-1 px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'list' 
+                      ? 'bg-white text-gray-900 shadow-sm' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                  <span>List</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -187,12 +217,21 @@ function App() {
           </div>
         )}
 
-        <Calendar
-          races={races}
-          onRaceCreate={handleRaceCreate}
-          onRaceUpdate={handleRaceUpdate}
-          onRaceDelete={handleRaceDelete}
-        />
+        {viewMode === 'calendar' ? (
+          <Calendar
+            races={races}
+            onRaceCreate={handleRaceCreate}
+            onRaceUpdate={handleRaceUpdate}
+            onRaceDelete={handleRaceDelete}
+          />
+        ) : (
+          <ListView
+            races={races}
+            onRaceCreate={handleRaceCreate}
+            onRaceUpdate={handleRaceUpdate}
+            onRaceDelete={handleRaceDelete}
+          />
+        )}
       </main>
 
       {/* Footer */}

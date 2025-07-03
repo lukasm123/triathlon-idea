@@ -31,13 +31,15 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { format, addMonths, subMonths, startOfMonth, isSameDay, isToday } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, isToday } from 'date-fns';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { TriathlonRace, CalendarDay } from '../types';
 import { 
   getCalendarDays, 
   getRaceDistanceColor, 
-  getRaceDistanceIcon
+  getRaceDistanceIcon,
+  getRecoveryDayStyle,
+  getRecoveryTooltip
 } from '../utils/dateUtils';
 import EventModal from './EventModal';
 
@@ -66,23 +68,15 @@ const Calendar: React.FC<CalendarProps> = ({ races, onRaceCreate, onRaceUpdate, 
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
   const [selectedRace, setSelectedRace] = useState<TriathlonRace | null>(null); // Race selected for editing
 
-  /**
+    /**
    * Effect: Update calendar days when current month or races change
    * Generates the calendar grid with races and recovery periods
    */
   useEffect(() => {
-    // For now, use simplified calendar generation
-    const days = getCalendarDays(startOfMonth(currentDate));
+    // Generate calendar grid with full recovery period calculation
+    const days = getCalendarDays(startOfMonth(currentDate), races);
     
-    // Associate races with their corresponding calendar days
-    const daysWithRaces = days.map(day => ({
-      ...day,
-      races: races.filter(race => isSameDay(new Date(race.date), day.date)),
-      recoveryPeriods: [], // TODO: Implement recovery period calculation
-      hasConflict: false
-    }));
-    
-    setCalendarDays(daysWithRaces);
+    setCalendarDays(days);
     console.log(`🏁 Calendar updated for ${format(currentDate, 'MMMM yyyy')} with ${races.length} races`);
   }, [currentDate, races]);
 
@@ -166,16 +160,23 @@ const Calendar: React.FC<CalendarProps> = ({ races, onRaceCreate, onRaceUpdate, 
         ))}
         
         {/* Calendar days */}
-        {calendarDays.map((day, index) => (
-          <div
-            key={index}
-            onClick={() => handleDayClick(day)}
-            className={`
-              min-h-[120px] p-2 border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors
-              ${!day.isCurrentMonth ? 'bg-gray-50 text-gray-400' : ''}
-              ${isToday(day.date) ? 'bg-blue-50 border-blue-200' : ''}
-            `}
-          >
+        {calendarDays.map((day, index) => {
+          const recoveryStyle = getRecoveryDayStyle(day.recoveryPeriods);
+          const recoveryTooltip = getRecoveryTooltip(day.recoveryPeriods);
+          
+          return (
+            <div
+              key={index}
+              onClick={() => handleDayClick(day)}
+              className={`
+                min-h-[120px] p-2 border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors
+                ${!day.isCurrentMonth ? 'bg-gray-50 text-gray-400' : ''}
+                ${isToday(day.date) ? 'bg-blue-50 border-blue-200' : ''}
+                ${recoveryStyle}
+                ${day.hasConflict ? 'bg-red-50 border-red-300' : ''}
+              `}
+              title={recoveryTooltip || `${format(day.date, 'MMMM d, yyyy')}`}
+            >
             <div className={`
               text-sm font-medium mb-1
               ${isToday(day.date) ? 'text-blue-600' : day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
@@ -206,8 +207,32 @@ const Calendar: React.FC<CalendarProps> = ({ races, onRaceCreate, onRaceUpdate, 
                 </div>
               )}
             </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Recovery Period Legend */}
+      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+        <h3 className="text-sm font-medium text-gray-900 mb-3">Recovery Period Legend</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+          <div className="flex items-center space-x-2">
+            <div className="w-6 h-1 bg-yellow-400 rounded"></div>
+            <span className="text-gray-700">Light Recovery (Sprint: ~3 days)</span>
           </div>
-        ))}
+          <div className="flex items-center space-x-2">
+            <div className="w-6 h-1 bg-orange-500 rounded"></div>
+            <span className="text-gray-700">Moderate Recovery (Olympic: ~5-7 days)</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-6 h-1 bg-red-500 rounded"></div>
+            <span className="text-gray-700">Heavy Recovery (Middle/Long: 10-35 days)</span>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 mt-2">
+          Recovery periods are shown as colored underlines on calendar days. 
+          Red background indicates scheduling conflicts.
+        </p>
       </div>
 
       {/* Event Modal */}

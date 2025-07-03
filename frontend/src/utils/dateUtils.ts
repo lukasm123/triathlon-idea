@@ -169,6 +169,50 @@ export const getCalendarDays = (date: Date, races: TriathlonRace[] = []): Calend
 };
 
 /**
+ * Get recovery period visual styling for a day
+ * @param recoveryPeriods - Recovery periods affecting this day
+ * @returns CSS classes for visual representation
+ */
+export const getRecoveryDayStyle = (recoveryPeriods: RecoveryPeriodInfo[]): string => {
+  if (recoveryPeriods.length === 0) return '';
+  
+  // Get the most intense recovery period if multiple overlap
+  const mostIntense = recoveryPeriods.reduce((prev, current) => {
+    const intensityOrder = { light: 1, moderate: 2, heavy: 3 };
+    return intensityOrder[current.intensity] > intensityOrder[prev.intensity] ? current : prev;
+  });
+  
+  // Return border-bottom styling based on intensity
+  switch (mostIntense.intensity) {
+    case 'light':
+      return 'border-b-4 border-yellow-400';
+    case 'moderate':
+      return 'border-b-4 border-orange-500';
+    case 'heavy':
+      return 'border-b-4 border-red-500';
+    default:
+      return '';
+  }
+};
+
+/**
+ * Get recovery period tooltip text
+ * @param recoveryPeriods - Recovery periods affecting this day
+ * @returns Tooltip text describing recovery periods
+ */
+export const getRecoveryTooltip = (recoveryPeriods: RecoveryPeriodInfo[]): string => {
+  if (recoveryPeriods.length === 0) return '';
+  
+  return recoveryPeriods.map(period => {
+    const raceConfig = RACE_DISTANCES[period.race.distance];
+    const raceDate = parseISO(period.race.date);
+    const daysFromRace = differenceInDays(raceDate, new Date());
+    const dayNumber = Math.abs(daysFromRace) + 1; // +1 because day of race is day 0
+    return `Recovery from ${period.race.title} (${raceConfig.label}) - Day ${dayNumber} of ${period.days}`;
+  }).join('\n');
+};
+
+/**
  * Get race distance configuration
  * @param distance - Race distance
  * @returns Distance configuration
