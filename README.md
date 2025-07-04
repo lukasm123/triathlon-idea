@@ -191,11 +191,11 @@ This runs:
 ## 🎯 **Future Enhancements**
 
 - **Advanced Recovery Visualization**: Heat maps and intensity indicators
+- **Calendar Integrations**: Integration for Google Calendar
 - **Training Integration**: Connect with training plans
 - **Performance Tracking**: Race result analysis
 - **Multi-Athlete Support**: Team and coach features
 - **Mobile App**: Native iOS/Android applications
-- **Wearable Integration**: Garmin, Polar, Suunto connectivity
 
 ## 🤝 **Contributing**
 
